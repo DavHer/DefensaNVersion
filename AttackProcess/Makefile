@@ -4,16 +4,16 @@
 # Author: David
 
 # project name (generate executable with this name)
-TARGET   = ejecutablen
+TARGET   = ejecutable64
 
 CC       = gcc
 # compiling flags here
-CFLAGS   = -Wall
+CFLAGS   = -Wall -fno-stack-protector -z execstack 
 CXXFLAGS = -O2 -g -Wall -fmessage-length=0 -std=c++11
 
 LINKER   = gcc -o
 # linking flags here
-LFLAGS   =
+LFLAGS   = -fno-stack-protector -z execstack 
 
 # change these to set the proper directories where each files shoould be
 SRCDIR   = src
@@ -29,12 +29,12 @@ rm       = rm -f
 
 
 $(BINDIR)/$(TARGET): $(OBJECTS)
-	@$(LINKER) $@ $(LFLAGS) $(OBJECTS)
+	$(LINKER) $@ $(LFLAGS) $(OBJECTS)
 	@cp -r $(BINDIR) $(ROOTDIR)
 	@echo "Linking complete!"
 
 $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c
-	@$(CC) -I$(INCDIR) $(CFLAGS) -c $< -o $@
+	$(CC) -I$(INCDIR) $(CFLAGS) -c $< -o $@
 	@echo "Compiled "$<" successfully!"
 
 .PHONEY: clean

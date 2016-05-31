@@ -23,7 +23,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
-#define SHMSZ		30
+#define SHMSZ		60
 
 void monitor_thread();
 

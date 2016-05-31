@@ -5,84 +5,75 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <stdio.h>
+#include <inttypes.h>
+#include <time.h>
 
-#define SHMSZ     27
+#define SHMSZ     	60
+#define SHMKEY		6000
 
-#define BUFFER_SIZE 100
+int shmid;
+char *shm;
 
-void writeShareMem() {
-	int shmid;
-	key_t key;
-	char *shm, *s;
+#define BUFFER_SIZE 50
 
-	/*
-	 * We need to get the segment named
-	 * "5678", created by the server.
-	 */
-	key = 5678;
 
-	/*
-	 * Locate the segment.
-	 */
+typedef struct __attribute__((__packed__)) output {
+	uint32_t pos;
+	uint32_t run_id;
+	uint32_t pid;
+	uint32_t output;
+	uint32_t timems;
+}output_t;
 
+void initShareMem() {
 	printf("	shmget\n");
-	if ((shmid = shmget(key, SHMSZ, 0666)) < 0) {
+	if ((shmid = shmget(SHMKEY, SHMSZ, 0666)) < 0) {
 		perror("	shmget");
 		exit(1);
 	}
-
-	/*
-	 * Now we attach the segment to our data space.
-	 */
 	printf("	shmat\n");
 	if ((shm = shmat(shmid, NULL, 0)) == (char *) -1) {
 		perror("	shmat");
 		exit(1);
 	}
-
-	/*
-	 * Now read what the server put in the memory.
-	 */
-	printf("	Reading from share memory\n");
-	s = shm;
-	while(*s == '\0') {
-		printf("	Share memory empty\n");
-	}
-	printf("	");
-	for (s = shm; *s != '\0'; s++)
-		printf("%c",*s);
-	printf("\n");
-
-	/*
-	 * Finally, change the first character of the
-	 * segment to '*', indicating we have read
-	 * the segment.
-	 */
-	printf("	Writting to share memory\n");
-	*shm = '*';
-
 }
 
-int bufferOverflow(char *payload) {
+void writeShareMem(output_t *output) {
+	output_t *outputs = (output_t*)shm;
+	printf("	Writing to share memory\n");
+	// Go to the position where I should write
+	output->timems = time(NULL);
+	outputs[output->pos] = *output;
+}
 
+int bufferOverflow(char *payload, output_t *o) {
+
+	//initShareMem();
 	char buffer[BUFFER_SIZE];
 	int ret = sprintf(buffer, "%s", payload);
 	printf("%s\n", buffer);
-	writeShareMem();
+	//writeShareMem(o);
 	return ret;
 }
 
 int main(int argc, char *argv[]) {
 
-	if (argc < 3) {
-		printf("Uso: ejecutablen <tipo> <payload>\n");
+	if (argc < 6) {
+		printf("Uso: ejecutablen <tipo> <run_id> <pid> <pos> <payload>\n");
 		return 0;
 	}
 	int tipo = atoi(argv[1]);
+	output_t o;
+	o.pid = atoi(argv[3]);
+	o.run_id = atoi(argv[2]);
+	o.pos = atoi(argv[4]);
+	char * buff = (char*)malloc(100 *sizeof(char));
+	scanf("%s",buff);
+	printf("%d %d %d\n", o.pid, o.run_id, o.pos);
 	switch (tipo) {
 	case 1:
 		printf("Ataque de buffer overflow\n");
-		bufferOverflow(argv[2]);
+		bufferOverflow(buff, &o);
 		break;
 	case 2:
 		printf("Ataque de ROP\n");

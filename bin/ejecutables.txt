@@ -1,1 +1,3 @@
-ejecutablen
+ejecutable64
+ejecutable64Opt
+ejecutable32
