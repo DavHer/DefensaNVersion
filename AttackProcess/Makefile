@@ -4,16 +4,16 @@
 # Author: David
 
 # project name (generate executable with this name)
-TARGET   = ejecutable64
+TARGET   = ejecutable32
 
 CC       = gcc
 # compiling flags here
-CFLAGS   = -Wall -fno-stack-protector -z execstack 
-CXXFLAGS = -O2 -g -Wall -fmessage-length=0 -std=c++11
+CFLAGS   = -m32 -Wall -fno-stack-protector -z execstack 
+CXXFLAGS = -g -Wall -fmessage-length=0 -std=c++11
 
 LINKER   = gcc -o
 # linking flags here
-LFLAGS   = -fno-stack-protector -z execstack 
+LFLAGS   = -m32 -fno-stack-protector -z execstack 
 
 # change these to set the proper directories where each files shoould be
 SRCDIR   = src
