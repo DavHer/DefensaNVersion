@@ -37,6 +37,7 @@ typedef struct pidPair {
     pid_t pid;
     string ejectuable;
     processState_t state;
+    bool analized;
 } pidPair_t;
 
 void monitor_thread();

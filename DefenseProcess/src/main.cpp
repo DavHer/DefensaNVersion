@@ -85,6 +85,7 @@ void receptor_thread() {
     for (int i = 0; i < (int) unidadesAtaque.size(); i++) {
         for (int j = 0; j < (int) ejecutables.size(); j++) {
             pidPair_t pidPair;
+            pidPair.analized = false;
             pidPair.pid = spawProcess(ejecutables[j], unidadesAtaque[i], i+1, j);
             pidPair.ejectuable = ejecutables[j];
             pidsPair.push_back(pidPair);
@@ -93,6 +94,7 @@ void receptor_thread() {
         }
 
         //TODO: wait for the current process to finish before spaw more process
+/*
         cout << "Waiting for processes" << endl;
         while (pidsPair.size() > 0) {
             for (int k = 0; k < (int) pidsPair.size(); k++) {
@@ -113,6 +115,7 @@ void receptor_thread() {
             }
         }
         cout << "Out of Pids\n";
+*/
     }
 }
 

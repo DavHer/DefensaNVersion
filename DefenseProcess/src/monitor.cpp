@@ -49,21 +49,51 @@ void initShareMem() {
     outputs = (output_t*) shm;
 }
 
+int waitForPid(pid_t pid, int pos) {
+    int i;
+    for (i = 0; i < 3; i++) {
+        if ((pid_t)outputs[i].pid == pid){
+            printf("Pid %d arrived to checkpoint at %ld\n", pid,
+                   time(0));
+            pidsPair[i].analized = true;
+            return 1;
+        }
+    }
+    int status;
+    if (-1 == waitpid(pid, &status, 0)){
+        if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+            printf("Pid %d crashed at %ld!\n", pid, time(0));
+        }
+        else {
+            printf("Pid %d end successfully at %ld\n", pid, time(0));
+        }
+        pidsPair[i].analized = true;
+        return 1;
+    }
+    return 0;
+}
 void monitor_thread() {
     initShareMem();
     printf(">Waiting for process to arrive in checkpoint\n");
     long five_seconds = 5 * CLOCKS_PER_SEC;
     clock_t start_time = clock();
     clock_t current_time = 0;
+    unsigned int infos = 0;
+    bool first_arrived = false;
 
     do {
-        if (outputs[0].pid != 0 || outputs[1].pid != 0 || outputs[2].pid != 0) {
-            printf("One arrived, wait 100ms for the others\n");
-            sleep_ms(100);
-            break;
+        for (unsigned int i = 0; i < pidsPair.size(); i++){
+            if (!pidsPair[i].analized) {
+                infos += waitForPid(pidsPair[i].pid, i);
+                if (!first_arrived && infos > 0){
+                    printf("first arrived!\n");
+                    first_arrived = true;
+                }
+            }
         }
         current_time = clock();
-    }while((current_time - start_time) < five_seconds);
+    }while((current_time - start_time) < five_seconds ||
+           infos < 3);
 
     /*** Analyze stuff ***/
     float chanceOffAttack = 0;
